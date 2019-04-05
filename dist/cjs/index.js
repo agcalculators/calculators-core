@@ -53,6 +53,44 @@ function nextSiblingUntil(elem, selector, filter) {
     return siblings;
 }
 
+const create = (channel = "redom") => {
+    const dispatch = (target, type, data) => {
+      const event = new window.CustomEvent(channel, {
+        bubbles: true,
+        detail: {
+          type,
+          data
+        }
+      });
+      const el = target.el || target;
+  
+      el.dispatchEvent(event);
+    };
+  
+    const listen = (target, handlers) => {
+      const el = target.el || target;
+  
+      const handler = e => {
+        const { type, data } = e.detail;
+  
+        handlers[type] && handlers[type](data);
+      };
+  
+      el.addEventListener(channel, handler);
+  
+      return {
+        destroy() {
+          el.removeEventListener(channel, handler);
+        }
+      };
+    };
+  
+    return {
+        dispatch,
+        listen
+    }
+  };
+
 exports.addDays = dates.addDays;
 exports.daysBetween = dates.daysBetween;
 exports.formatDate = dates.formatDate;
@@ -66,5 +104,6 @@ exports.isInteger = types.isInteger;
 exports.isNumber = types.isNumber;
 exports.oneOf = types.oneOf;
 exports.validate = forms.validate;
+exports.createDispatcher = create;
 exports.nextSibling = nextSibling;
 exports.nextSiblingUntil = nextSiblingUntil;
